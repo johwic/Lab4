@@ -1,4 +1,4 @@
-package lab4C;
+package lab4E5;
 
 import java.awt.Color;
 import java.awt.Dimension;

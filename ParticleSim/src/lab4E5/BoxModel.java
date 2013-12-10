@@ -1,4 +1,4 @@
-package lab4C;
+package lab4E5;
 
 import java.awt.geom.*;
 
@@ -56,7 +56,7 @@ public class BoxModel {
 	public class Particle extends Ellipse2D.Double {
 
         public boolean isStuck = false;
-        private static final int d = 2;
+        private static final int d = 2;	// diameter
 
 		/** Generates random start coordinates. */
 		private Particle() {
@@ -71,6 +71,9 @@ public class BoxModel {
 		/** moves particle at index one brownian step */
 		private void moveBrownian2D() {
 			double theta = Math.random()*2*Math.PI;
+			// TODO Separate collision detection and other processing
+			// into methods, or maybe separate object(s) that we put
+			// in process queue and run particles through that.
 			setFrame(getX() + L*Math.cos(theta), getY() + L*Math.sin(theta), d, d);
 			if ( getX() < 0) {
 				setFrame(0, getY(), d, d);

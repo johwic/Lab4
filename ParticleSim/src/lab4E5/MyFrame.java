@@ -1,4 +1,4 @@
-package lab4C;
+package lab4E5;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
