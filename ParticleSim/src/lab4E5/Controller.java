@@ -10,8 +10,10 @@ import javax.swing.Timer;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.GridLayout;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class Controller extends JPanel implements ActionListener, ChangeListener {
 
@@ -20,6 +22,9 @@ public class Controller extends JPanel implements ActionListener, ChangeListener
 	private Timer timer;
 	private JSlider LSlider, deltaSlider;
 
+	private static final int X = 0;
+	private static final int Y = 1;
+
 	private static final int L_MIN = 0;
 	private static final int L_MAX = 100;
 	private static final int L_INIT = 10;
@@ -27,17 +32,21 @@ public class Controller extends JPanel implements ActionListener, ChangeListener
 	private static final int DELTA_MIN = 16;
 	private static final int DELTA_MAX = 1000;
 	private static final int DELTA_INIT = 33;
-	
-	private static final int RECORD_STEPS	= 100;
-	private static final String	RECORD_FILENAME = "particle_data.txt";
-	
-	private FileWriter 		writer	= null;
-	private StringBuilder 	data	= null;
-	
 
-	public Controller(BoxModel model, BoxView view)  {
-		this.model = model;
-		this.view = view;
+	private static final int 	RECORD_STEPS	= 100;
+	private static final String	RECORD_FILENAME = "particle_data.txt";
+
+	private int				dt 			= DELTA_INIT;
+	private double 			time 		= 0;
+	private int			stepCount		= 0;
+
+	private PrintWriter 	writer	= null;
+	private StringBuilder 	data	= null;
+
+
+	public Controller(BoxModel modelIn, BoxView viewIn) throws FileNotFoundException  {
+		model = modelIn;
+		view = viewIn;
 
 		LSlider = new JSlider(L_MIN, L_MAX, L_INIT);
 		deltaSlider = new JSlider(DELTA_MIN, DELTA_MAX, DELTA_INIT);
@@ -51,22 +60,47 @@ public class Controller extends JPanel implements ActionListener, ChangeListener
 		add(wrapper);
 		add(view);
 
-		this.model.setL((double) L_INIT);
+		model.setL((double) L_INIT);
+
+		startWriter();
+		System.out.println("Started writer.");
 
 		timer = new Timer(DELTA_INIT, this);
 		timer.setInitialDelay(1000);
 		timer.start();
 	}
-	
-	private void startWriter() throws IOException {
-		try{
-			writer = new FileWriter(RECORD_FILENAME);
-			int startLen = model.getParticleCount();
+
+	private void startWriter() throws FileNotFoundException {
+
+		writer = new PrintWriter(RECORD_FILENAME);
+	}
+
+	/** Assumes writer already created and file ready to write. */
+	private void writeLine() {
+		int len = model.getParticleCount();
+
+		/* prealloc len*2*8 + len*2 + 8 + 2 to fit all doubles, commas and whitespace
+		 * ? does len become the # chars? how many chars for a double ?
+		 */
+		data = new StringBuilder(10 + len*18);
+
+		/* build data string */
+		data.append(time);
+		double[][] pos = model.getParticlePos2D();
+		for (int i = 0; i < len; i++) {
+			data.append(", ");
+			data.append(pos[i][X]);
+			data.append(", ");
+			data.append(pos[i][Y]);
 		}
-		finally {
-			if (writer != null) {
-				writer.close();
-			}
+
+		/* write a line */
+		writer.println(data);
+	}
+
+	private void stopWriter() {
+		if (writer != null) {
+			writer.close();
 		}
 	}
 
@@ -80,11 +114,12 @@ public class Controller extends JPanel implements ActionListener, ChangeListener
 		JSlider source = (JSlider)e.getSource();
 
 		if (source == LSlider) {
-			this.model.setL((double) source.getValue());
+			model.setL((double) source.getValue());
 		}
 
 		if (source == deltaSlider) {
-			updateTimer(source.getValue());	
+			dt = source.getValue();
+			updateTimer(source.getValue());
 			// TODO find out why animation pauses when I move deltaSlider.
 			// UpdateTimer() restarts timer for every new value.
 			// Fix this (if we have time).
@@ -92,7 +127,23 @@ public class Controller extends JPanel implements ActionListener, ChangeListener
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		this.model.updatePosition();
-		this.view.repaint();
+
+		if (stepCount > 0) {
+			time += dt;
+		}
+
+		model.updatePosition();
+
+		if (stepCount < RECORD_STEPS) {
+			writeLine();
+		}
+		if (stepCount == RECORD_STEPS) {
+			stopWriter();
+			System.out.println("Stopping writer at " + stepCount + " steps.");
+		}
+
+		stepCount++;
+
+		view.repaint();
 	}
 }
