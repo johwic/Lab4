@@ -10,7 +10,10 @@ public class BoxModel {
 	private int[] dim = {500, 500};
 
 	private int particleCount = 0;
-	private Particle[] particleArray;
+	private Particle[] particleArray;	// TODO maybe a tree instead
+
+	// TODO a hashtable that keeps track of particles in a grid in space for collision
+	// TODO collision detection
 
 	public BoxModel(int particleCountIn) {
 		particleCount = particleCountIn;
@@ -26,12 +29,12 @@ public class BoxModel {
 
 	public void updatePosition() {
 		for (int i=0; i < particleCount; i++) {
-        	if (!particleArray[i].isStuck) {
+			if (!particleArray[i].isStuck) {
 				particleArray[i].moveBrownian2D();
-            }
+			}
 		}
 	}
-	
+
 	public double getL() {
 		return L;
 	}
@@ -39,24 +42,35 @@ public class BoxModel {
 	public void setL(double LIn) {
 		L = LIn;
 	}
-	
+
 	public int getParticleCount() {
 		return particleCount;
 	}
 
 	/**
-         * Returns a 2D array with copy of xy coordinates
-         * @return double[][]
-         */
+	 * Returns a 2D array with copy of xy coordinates
+	 * @return double[][]
+	 */
 	public BoxModel.Particle[] getParticles() {
 
 		return particleArray;
 	}
 
+	/** Returns a 2D array with copy of xy coordinates */
+	public double[][] getParticlePos2D() {
+		double[][] positions = new double[particleCount][2];
+		for (int i=0; i < particleCount; i++) {
+			positions[i][X] = particleArray[i].getX();	// TODO are these upperleft coords?
+			positions[i][Y] = particleArray[i].getY();
+		}
+		return positions;
+	}
+
 	public class Particle extends Ellipse2D.Double {
 
-        public boolean isStuck = false;
-        private static final int d = 2;	// diameter
+		public boolean isStuck = false;
+		private static final double d = 6;	// diameter
+		// private static final double radius = d/2;
 
 		/** Generates random start coordinates. */
 		private Particle() {
@@ -74,9 +88,12 @@ public class BoxModel {
 			// TODO Separate collision detection and other processing
 			// into methods, or maybe separate object(s) that we put
 			// in process queue and run particles through that.
-			setFrame(getX() + L*Math.cos(theta), getY() + L*Math.sin(theta), d, d);
+			double x = getX() + L*Math.cos(theta);
+			double y = getY() + L*Math.sin(theta);
+			
+			setFrame(x, y, d, d);
 			if ( getX() < 0) {
-				setFrame(0, getY(), d, d);
+				setFrame(0, getY(), d, d);	// TODO doesn't setFrame use upperleft? This is not center of ellipse?
 				isStuck = true;
 			}
 			if ( getY() < 0) {
