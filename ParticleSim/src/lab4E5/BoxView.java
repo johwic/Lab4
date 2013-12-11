@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.*;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -48,6 +49,14 @@ public class BoxView extends JPanel {
 		 */
 		int count = box.getParticleCount();
 		BoxModel.Particle[] particles = box.getParticles();
+                
+                 /*ArrayList<Rectangle2D> boxes = model.getTree().getBoxes();
+        
+                g2D.setColor(BLACK);
+                for( int i = 0; i < boxes.size(); i++ ) {
+                    g2D.draw(boxes.get(i));
+                }*/
+                
 		for (int i = 0; i < count; i++) {	// TODO map to pixelspace
 			if ( particles[i].isStuck ) {
 				g2D.setColor(RED);

@@ -11,7 +11,7 @@ public class MyFrame extends JFrame {
 	private BoxView		view;
     private Controller 	controller;
 	
-	private final int particleCount = 1000;
+	private final int particleCount = 10000;
 	
 	public MyFrame(String stringIn) {
                 super(stringIn);

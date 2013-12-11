@@ -104,7 +104,7 @@ public class Controller extends JPanel implements ActionListener, ChangeListener
 		}
 	}
 
-	protected void updateTimer(int delta) { // why protected?
+	private void updateTimer(int delta) { 
 		timer.stop();
 		timer = new Timer(delta, this);
 		timer.start();

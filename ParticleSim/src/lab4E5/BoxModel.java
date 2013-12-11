@@ -7,10 +7,11 @@ public class BoxModel {
 	private static final int X = 0;
 	private static final int Y = 1;
 	private double L;
-	private int[] dim = {500, 500};
+	private int[] dim = {512, 512};
 
 	private int particleCount = 0;
 	private Particle[] particleArray;	// TODO maybe a tree instead
+        private final QuadTree tree;
 	// private ParticleData particleData;
 
 	// TODO a hashtable that keeps track of particles in a grid in space for collision
@@ -18,6 +19,7 @@ public class BoxModel {
 
 	public BoxModel(int particleCountIn) {
 		particleCount = particleCountIn;
+                tree = new QuadTree(new Rectangle2D.Double(0, 0, dim[X], dim[Y]));
 		genParticles();
 	}
 
@@ -54,6 +56,10 @@ public class BoxModel {
 
 		return particleArray;
 	}
+        
+        public QuadTree getTree() {
+            return tree;
+        }
 
 	/** Returns a 2D array with copy of xy coordinates */
 	public double[][] getParticlePos2D() {
@@ -68,13 +74,13 @@ public class BoxModel {
 	protected class Particle extends Point2D.Double {
 
 		public boolean isStuck = false;
-		private static final double diameter = 6;
+		private static final double diameter = 2;
 		private static final double radius = diameter/2;
 		private Ellipse2D.Double ellipse;
 
 		/** Generates random start coordinates. */
 		private Particle() {
-			this((dim[X])*Math.random(), (dim[Y])*Math.random());
+			this((dim[X]-1)*Math.random(), (dim[Y]-1)*Math.random());
 		}
 
 		/** Creates particle at absolute x,y, getBoxDim() first. */
@@ -114,6 +120,19 @@ public class BoxModel {
 			}
 			
 			ellipse.setFrame(getX()-radius, getY()-radius, diameter, diameter);
+                        
+                        if ( distance(255, 255) < 130 && distance(255,255) > 126) {
+                            isStuck = true;
+                        }
+                        if (isStuck) {
+                            tree.insert(this);
+                        }
+                        else {
+                            if (tree.query(this.getEllipse().getBounds2D())) {
+                                isStuck = true;
+                                tree.insert(this);
+                            }
+                        }
 		}
 
 		public Ellipse2D.Double getEllipse() {
