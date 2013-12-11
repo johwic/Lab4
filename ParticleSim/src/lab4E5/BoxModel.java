@@ -11,6 +11,7 @@ public class BoxModel {
 
 	private int particleCount = 0;
 	private Particle[] particleArray;	// TODO maybe a tree instead
+	// private ParticleData particleData;
 
 	// TODO a hashtable that keeps track of particles in a grid in space for collision
 	// TODO collision detection
@@ -21,10 +22,12 @@ public class BoxModel {
 	}
 
 	private void genParticles() {
-		particleArray = new Particle[particleCount];
+		particleArray = new Particle[particleCount];		
 		for (int i=0; i < particleCount; i++) {
 			particleArray[i] = new Particle();
 		}
+		
+		// particleData = new ParticleData(particleCount);
 	}
 
 	public void updatePosition() {
@@ -47,10 +50,6 @@ public class BoxModel {
 		return particleCount;
 	}
 
-	/**
-	 * Returns a 2D array with copy of xy coordinates
-	 * @return double[][]
-	 */
 	public BoxModel.Particle[] getParticles() {
 
 		return particleArray;
@@ -60,26 +59,29 @@ public class BoxModel {
 	public double[][] getParticlePos2D() {
 		double[][] positions = new double[particleCount][2];
 		for (int i=0; i < particleCount; i++) {
-			positions[i][X] = particleArray[i].getX();	// TODO are these upperleft coords?
+			positions[i][X] = particleArray[i].getX();
 			positions[i][Y] = particleArray[i].getY();
 		}
 		return positions;
 	}
 
-	public class Particle extends Ellipse2D.Double {
+	protected class Particle extends Point2D.Double {
 
 		public boolean isStuck = false;
-		private static final double d = 6;	// diameter
-		// private static final double radius = d/2;
+		private static final double diameter = 6;
+		private static final double radius = diameter/2;
+		private Ellipse2D.Double ellipse;
 
 		/** Generates random start coordinates. */
 		private Particle() {
-			this((dim[X]-d-1)*Math.random(), (dim[Y]-d-1)*Math.random());
+			this((dim[X])*Math.random(), (dim[Y])*Math.random());
 		}
 
 		/** Creates particle at absolute x,y, getBoxDim() first. */
 		private Particle(double xIn, double yIn) {
-			super(xIn, yIn, d, d);
+			super(xIn, yIn);
+			
+			ellipse = new Ellipse2D.Double(getX()-radius, getY()-radius, diameter, diameter);
 		}
 
 		/** moves particle at index one brownian step */
@@ -91,24 +93,40 @@ public class BoxModel {
 			double x = getX() + L*Math.cos(theta);
 			double y = getY() + L*Math.sin(theta);
 			
-			setFrame(x, y, d, d);
+			setLocation(x, y);
+			
+			/* detect box edge collision */
 			if ( getX() < 0) {
-				setFrame(0, getY(), d, d);	// TODO doesn't setFrame use upperleft? This is not center of ellipse?
+				setLocation(0, getY());
 				isStuck = true;
 			}
 			if ( getY() < 0) {
-				setFrame(getX(), 0, d, d);
+				setLocation(getX(), 0);
 				isStuck = true;
 			}
-			if ( getX() > (dim[X]-d-1)) {
-				setFrame((dim[X]-d-1), getY(), d, d);
+			if ( getX() > (dim[X])) {
+				setLocation((dim[X]), getY());
 				isStuck = true;
 			}
-			if ( getY() > (dim[Y]-d-1)) {
-				setFrame(getX(), (dim[Y]-d-1), d, d);
+			if ( getY() > (dim[Y])) {
+				setLocation(getX(), (dim[Y]));
 				isStuck = true;
 			}
+			
+			ellipse.setFrame(getX()-radius, getY()-radius, diameter, diameter);
 		}
 
+		public Ellipse2D.Double getEllipse() {
+			return ellipse;
+		}
+	}
+	
+	protected class ParticleData {
+		/* X Y theta */
+		private double[][] coords = null;
+		
+		ParticleData (int sizeIn) {
+			coords = new double[sizeIn][3];
+		}
 	}
 }

@@ -9,7 +9,7 @@ public class MyFrame extends JFrame {
 	
 	private BoxModel	model;
 	private BoxView		view;
-        private Controller controller;
+    private Controller 	controller;
 	
 	private final int particleCount = 1000;
 	

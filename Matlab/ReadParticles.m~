@@ -1,3 +1,0 @@
-P = load('particle_data.txt');
-
-plot( X(

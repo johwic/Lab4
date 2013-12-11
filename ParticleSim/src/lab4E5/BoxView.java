@@ -54,7 +54,7 @@ public class BoxView extends JPanel {
 			} else {
 				g2D.setColor(BLUE);
 			}
-			g2D.draw(particles[i]);
+			g2D.draw(particles[i].getEllipse());
 		}
 		
 	}
